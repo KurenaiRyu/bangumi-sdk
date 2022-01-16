@@ -2,8 +2,6 @@ package moe.kurenai.bgm.request.search
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.core.type.TypeReference
-import moe.kurenai.bgm.model.SubjectType
-import moe.kurenai.bgm.model.item.Subject
 import moe.kurenai.bgm.model.search.SearchResult
 import moe.kurenai.bgm.request.HttpMethod
 import moe.kurenai.bgm.request.Request

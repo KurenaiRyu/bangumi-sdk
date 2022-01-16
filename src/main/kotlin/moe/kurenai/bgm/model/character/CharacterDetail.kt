@@ -1,6 +1,6 @@
 package moe.kurenai.bgm.model.character
 
-import moe.kurenai.bgm.model.item.Image
+import moe.kurenai.bgm.model.subject.Image
 
 data class CharacterDetail(
     val id: Int,

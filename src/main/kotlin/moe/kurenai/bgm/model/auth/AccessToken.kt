@@ -1,12 +1,12 @@
 package moe.kurenai.bgm.model.auth
 
 class AccessToken(
-    val accessToken: String,
-    val expiresIn: Long,
-    val tokenType: String,
-    val scope: String? = null,
-    val refreshToken: String,
-    val userId: Long
+    var accessToken: String,
+    var expiresIn: Long,
+    var tokenType: String,
+    var scope: String? = null,
+    var refreshToken: String,
+    var userId: Long
 )
 
 object AccessTokenType {
