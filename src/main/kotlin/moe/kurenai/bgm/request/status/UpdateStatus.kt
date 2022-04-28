@@ -11,8 +11,6 @@ data class UpdateStatus(
     val id: Int,
     @JsonIgnore
     val status: Int,
-    @JsonIgnore
-    override val token: String,
     val epId: String,
 ): Request<Response>() {
     @JsonIgnore

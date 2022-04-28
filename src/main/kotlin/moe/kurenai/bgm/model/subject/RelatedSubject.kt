@@ -6,8 +6,8 @@ data class RelatedSubject (
     val name: String,
     val nameCn: String,
     val career: String,
-    val images: Image,
+    val images: Image?,
     val relation: String,
-    ) {
+) {
 
 }

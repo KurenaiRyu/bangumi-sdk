@@ -1,5 +1,7 @@
 package moe.kurenai.bgm.model.subject
 
+import com.fasterxml.jackson.databind.JsonNode
+
 class Subject {
 
     var id: Int = 0
@@ -10,9 +12,9 @@ class Subject {
     var nsfw: Boolean = false
     var locked: Boolean = false
     var date: String? = ""
-    var platform: String = ""
+    var platform: String? = null
     var images: Image? = null
-    var infobox: List<HashMap<String, Any>>? = null
+    var infobox: JsonNode? = null
     var volumes: Int = 0
     var eps: Int = 0
     var totalEpisodes: Int = 0
@@ -32,8 +34,8 @@ class Subject {
         locked: Boolean,
         date: String,
         platform: String,
-        images: Image,
-        infobox: List<HashMap<String, Any>>?,
+        images: Image?,
+        infobox: JsonNode?,
         volumes: Int,
         eps: Int,
         totalEpisodes: Int,
