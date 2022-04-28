@@ -8,9 +8,11 @@ import moe.kurenai.bgm.request.Request
 
 class GetCalendar: Request<List<Calendar>>() {
     @JsonIgnore
-    override val method: String = "calendar"
+    override val path: String = "calendar"
+
     @JsonIgnore
-    override val responseType = object: TypeReference<List<Calendar>>(){}
+    override val responseType = object : TypeReference<List<Calendar>>() {}
+
     @JsonIgnore
     override val httpMethod = HttpMethod.GET
 }

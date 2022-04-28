@@ -10,13 +10,17 @@ data class GetTokenStatus(
     val accessToken: String
 ): Request<TokenStatus>() {
     @JsonIgnore
-    override val method: String = "access_token"
+    override val path: String = "access_token"
+
     @JsonIgnore
-    override val responseType = object: TypeReference<TokenStatus>(){}
+    override val responseType = object : TypeReference<TokenStatus>() {}
+
     @JsonIgnore
     override val httpMethod = HttpMethod.POST
+
     @JsonIgnore
-    override val needToken: Boolean = false
+    override val requireToken: Boolean = false
+
     @JsonIgnore
     override val isAuthRequest: Boolean = true
 }

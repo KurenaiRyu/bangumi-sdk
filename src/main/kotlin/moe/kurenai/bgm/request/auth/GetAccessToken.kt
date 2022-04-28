@@ -16,13 +16,14 @@ class AccessTokenRequest(
     val state: String? = null,
 ): Request<AccessToken>() {
     @JsonIgnore
-    override val method: String = "access_token"
+    override val path: String = "access_token"
+
     @JsonIgnore
-    override val responseType = object: TypeReference<AccessToken>(){}
+    override val responseType = object : TypeReference<AccessToken>() {}
+
     @JsonIgnore
     override val httpMethod = HttpMethod.POST
-    @JsonIgnore
-    override val needToken: Boolean = false
+
     @JsonIgnore
     override val isAuthRequest: Boolean = true
 }

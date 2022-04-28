@@ -11,9 +11,11 @@ data class GetUser (
     val username: String,
 ): Request<Me>() {
     @JsonIgnore
-    override val method: String = "user/$username"
+    override val path: String = "user/$username"
+
     @JsonIgnore
-    override val responseType = object: TypeReference<Me>(){}
+    override val responseType = object : TypeReference<Me>() {}
+
     @JsonIgnore
     override val httpMethod = HttpMethod.GET
 }

@@ -1,31 +1,28 @@
 package moe.kurenai.bgm.model.person
 
+import com.fasterxml.jackson.databind.JsonNode
 import moe.kurenai.bgm.model.subject.Image
 
-data class CharacterDetail(
+class PersonDetail(
     val id: Int,
     val name: String,
     val type: Int,
-    val career: String,
-    val images: Image,
+    val career: List<String>,
+    val images: Image?,
     val summary: String,
     val locked: Boolean,
     val lastModified: String,
-    val infoBox: Map<String, String>? = null,
-    val gender: String,
+    val infobox: JsonNode? = null,
     val bloodType: Int,
+    val gender: String? = null,
     val birthYear: Int? = null,
     val birthMon: Int? = null,
     val birthDay: Int? = null,
     val stat: Stat,
-    val img: Image,
 ) {
-
 }
 
 data class Stat(
     val comments: Int,
     val collects: Int,
-) {
-
-}
+)

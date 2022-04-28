@@ -17,13 +17,17 @@ data class SearchSubject(
     var maxResults: Int? = null,
 ): Request<SearchResult>() {
     @JsonIgnore
-    override val method: String = "search/subject/${URLEncoder.encode(keywords, StandardCharsets.UTF_8)}"
+    override val path: String = "search/subject/${URLEncoder.encode(keywords, StandardCharsets.UTF_8)}"
+
     @JsonIgnore
-    override val responseType = object: TypeReference<SearchResult>(){}
+    override val responseType = object : TypeReference<SearchResult>() {}
+
     @JsonIgnore
     override val httpMethod = HttpMethod.GET
+
     @JsonIgnore
-    override val needToken: Boolean = true
+    override val requireToken: Boolean = true
+
     @JsonIgnore
     override val isAuthRequest: Boolean = false
 

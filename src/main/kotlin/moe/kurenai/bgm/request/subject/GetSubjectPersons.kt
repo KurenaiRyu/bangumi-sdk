@@ -11,9 +11,11 @@ data class GetSubjectPersons(
     val subjectId: Int,
 ): Request<List<RelatedPerson>>() {
     @JsonIgnore
-    override val method: String = "v0/subjects/$subjectId/persons"
+    override val path: String = "v0/subjects/$subjectId/persons"
+
     @JsonIgnore
-    override val responseType = object: TypeReference<List<RelatedPerson>>(){}
+    override val responseType = object : TypeReference<List<RelatedPerson>>() {}
+
     @JsonIgnore
     override val httpMethod = HttpMethod.GET
 }

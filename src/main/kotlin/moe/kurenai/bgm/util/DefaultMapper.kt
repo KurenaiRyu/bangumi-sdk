@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.*
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.KotlinFeature
 import com.fasterxml.jackson.module.kotlin.jsonMapper
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import moe.kurenai.bgm.exception.BgmException
@@ -15,18 +16,29 @@ import java.io.IOException
 import java.net.http.HttpResponse
 
 
-object DefaultMapper{
+object DefaultMapper {
 
     private val log = LogManager.getLogger()
 
     val MAPPER: ObjectMapper = jsonMapper {
-        addModules(kotlinModule(), Jdk8Module(), JavaTimeModule())
+        addModules(
+            kotlinModule {
+                withReflectionCacheSize(512)
+                    .configure(KotlinFeature.NullToEmptyCollection, false)
+                    .configure(KotlinFeature.NullToEmptyMap, false)
+                    .configure(KotlinFeature.NullIsSameAsDefault, false)
+                    .configure(KotlinFeature.SingletonSupport, true)
+                    .configure(KotlinFeature.StrictNullChecks, false)
+            },
+            Jdk8Module(),
+            JavaTimeModule()
+        )
     }
         .enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING)
         .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
-        .setSerializationInclusion(JsonInclude.Include.NON_ABSENT)
+        .setSerializationInclusion(JsonInclude.Include.NON_NULL)
 
     fun <T> convertToString(t: T): String {
         return try {
@@ -43,16 +55,19 @@ object DefaultMapper{
     fun <T> parseResponse(response: HttpResponse<ByteArray>, reference: TypeReference<T>): T {
         return when (response.statusCode()) {
             200 -> {
-                 MAPPER.readValue(response.body(), reference)
+                MAPPER.readValue(response.body(), reference)
             }
+
             404 -> {
                 throw MAPPER.readValue(response.body(), NotFoundException::class.java)
             }
+
             422 -> {
                 throw MAPPER.readValue(response.body(), ValidationError::class.java)
             }
+
             else -> {
-               throw BgmException("Unknown response type")
+                throw BgmException("Unknown response type")
             }
         }
     }

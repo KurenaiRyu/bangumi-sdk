@@ -1,18 +1,18 @@
 package moe.kurenai.bgm.model.subject
 
-data class SubjectSmall(
-    val id: Int,
-    val url: String,
-    val type: Int,
-    val name: String,
-    val nameCn: String,
-    val summary: String,
-    val airDate: String,
-    val airWeekday: Int,
-    val images: Image? = null,
-    val eps: Int,
-    val epsCount: Int,
-    val rating: Rating? = null,
-    val collection: SubjectCollection? = null,
-) {
+
+class SubjectSmall {
+    var id: Int = 0
+    var url: String = ""
+    var type: Int = 0
+    var name: String = ""
+    var nameCn: String = ""
+    var summary: String = ""
+    var airDate: String = ""
+    var airWeekday: Int = 0
+    var images: Image? = null
+    var eps: Int = 0
+    var epsCount: Int = 0
+    var rating: Rating? = null
+    var collection: SubjectCollection? = null
 }
