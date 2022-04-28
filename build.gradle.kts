@@ -2,11 +2,12 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.6.10"
+    id("io.spring.dependency-management") version "1.0.7.RELEASE"
     `maven-publish`
 }
 
 group = "moe.kurenai.bgm"
-version = "0.0.1"
+version = "0.0.1-SNAPSHOT"
 
 repositories {
     mavenLocal()
@@ -24,8 +25,6 @@ dependencies {
     api("org.jetbrains.kotlin", "kotlin-reflect")
     api("org.jetbrains.kotlin", "kotlin-stdlib-jdk8")
 
-    api("com.fasterxml.jackson.core:jackson-core:${Versions.jackson}")
-    api("com.fasterxml.jackson.core:jackson-annotations:${Versions.jackson}")
     api("com.fasterxml.jackson.core:jackson-databind:${Versions.jackson}")
     api("com.fasterxml.jackson.module:jackson-module-kotlin:${Versions.jackson}")
     api("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:${Versions.jackson}")
@@ -33,6 +32,9 @@ dependencies {
 
     api("org.apache.logging.log4j:log4j-core:${Versions.log4j}")
     api("org.apache.logging.log4j:log4j-api:${Versions.log4j}")
+
+    api(platform("io.projectreactor:reactor-bom:2020.0.18"))
+    api("io.projectreactor:reactor-core")
 
     api("com.lmax:disruptor:${Versions.disruptor}")
 
@@ -49,10 +51,19 @@ tasks.withType<KotlinCompile>() {
 
 publishing {
     publications {
-        create<MavenPublication>("maven") {
-            // groupId = project.group
-            // artifactId = project.name
-            // version = project.version
+        repositories {
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/KurenaiRyu/bangumi-sdk")
+                credentials {
+                    username = project.findProperty("gpr.user") as String? ?: System.getenv("USERNAME")
+                    password = project.findProperty("gpr.key") as String? ?: System.getenv("TOKEN")
+                }
+            }
+        }
+    }
+    publications {
+        register<MavenPublication>("gpr") {
             from(components["java"])
         }
     }

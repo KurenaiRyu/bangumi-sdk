@@ -2,26 +2,23 @@ package moe.kurenai.bgm
 
 import moe.kurenai.bgm.exception.BgmException
 import moe.kurenai.bgm.model.auth.AccessToken
-import moe.kurenai.bgm.request.auth.AccessTokenGrantType
-import moe.kurenai.bgm.request.auth.AccessTokenRequest
 import moe.kurenai.bgm.request.HttpMethod
 import moe.kurenai.bgm.request.Request
+import moe.kurenai.bgm.request.auth.AccessTokenGrantType
+import moe.kurenai.bgm.request.auth.AccessTokenRequest
+import moe.kurenai.bgm.util.BgmUtils.urlEncode
 import moe.kurenai.bgm.util.DefaultMapper
 import moe.kurenai.bgm.util.DefaultMapper.convertToMap
 import moe.kurenai.bgm.util.DefaultMapper.parse
 import moe.kurenai.bgm.util.HttpHeaders
 import org.apache.logging.log4j.LogManager
 import java.net.URI
-import java.net.URLEncoder
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
-import java.nio.charset.StandardCharsets
 import java.time.Duration
-import java.util.concurrent.CompletableFuture
-import kotlin.jvm.Throws
 
-class BgmClient(
+open class BgmClient(
     val appId: String,
     val appSecret: String,
     val redirectUri: String,
@@ -31,49 +28,70 @@ class BgmClient(
 ) {
 
     companion object {
+        internal val OS_NAME = System.getProperty("os.name")
+        internal val OS_ARCH = System.getProperty("os.arch")
+        internal val OS_VERSION = System.getProperty("os.version")
+        internal val UA = "Kurenai Bangumi SDK Client/0.0.1 ($OS_NAME $OS_ARCH $OS_VERSION)"
+        internal val DEFAULT_TIMEOUT = Duration.ofSeconds(10)
+        internal const val DEFAULT_MIME_TYPE = "application/json"
+
         private val log = LogManager.getLogger()
-        private val DEFAULT_TIMEOUT = Duration.ofSeconds(10)
-        private const val DEFAULT_MIME_TYPE = "application/json"
     }
 
-    fun <T> send(request: Request<T>, timeout: Duration? = null): CompletableFuture<T> {
-        return HttpClient.newHttpClient()
-            .sendAsync(buildRequest(request, timeout), HttpResponse.BodyHandlers.ofByteArray())
-            .thenApplyAsync { response: HttpResponse<ByteArray> -> response.log() }
-            .thenApply { response: HttpResponse<ByteArray> -> response.parse(request.responseType) }
-            .handle { res, case ->
-                case?.let {
-                    log.error("Bangumi client error", case)
-                    throw case
-                }
-                res
-            }
-    }
+    @Volatile
+    private var reactiveBgmClient: ReactiveBgmClient? = null
 
-    fun <T> sendSync(request: Request<T>, timeout: Duration? = null): T {
-        return HttpClient.newHttpClient()
-            .send(buildRequest(request, timeout), HttpResponse.BodyHandlers.ofByteArray())
+    @Volatile
+    private var asyncBgmClient: AsyncBgmClient? = null
+
+    internal val client = HttpClient.newHttpClient()
+
+    fun <T> send(request: Request<T>, timeout: Duration? = null): T {
+        return client.send(buildRequest(request, timeout), HttpResponse.BodyHandlers.ofByteArray())
             .log()
             .parse(request.responseType)
     }
 
-    fun oauthUrl(state: String? = null): String {
+    fun getOauthUrl(state: String? = null): String {
         val url = "$authBaseUrl/authorize?client_id=$appId&response_type=code&redirect_uri=$redirectUri"
-        return state?.let { "$url&state=$state" }?:url
+        return state?.let { "$url&state=$state" } ?: url
     }
 
-    fun getToken(code: String, state: String? = null): CompletableFuture<AccessToken> {
-        return send(AccessTokenRequest(AccessTokenGrantType.AUTHORIZATION_CODE, appId, appSecret, redirectUri, state = state, code = code))
+    fun getToken(code: String, state: String? = null): AccessToken {
+        return send(buildAccessTokenReq(AccessTokenGrantType.AUTHORIZATION_CODE, code, state = state))
     }
 
-    fun refreshToken(refreshToken: String): CompletableFuture<AccessToken> {
-        return send(AccessTokenRequest(AccessTokenGrantType.REFRESH_TOKEN, appId, appSecret, redirectUri, refreshToken = refreshToken))
+    fun refreshToken(refreshToken: String): AccessToken {
+        return send(buildAccessTokenReq(AccessTokenGrantType.REFRESH_TOKEN, refreshToken = refreshToken))
+    }
+
+    fun reactive(): ReactiveBgmClient {
+        if (reactiveBgmClient == null) {
+            synchronized(this) {
+                if (reactiveBgmClient == null) {
+                    reactiveBgmClient = ReactiveBgmClient(this)
+                }
+            }
+        }
+        return reactiveBgmClient!!
+    }
+
+    fun async(): AsyncBgmClient {
+        if (asyncBgmClient == null) {
+            synchronized(this) {
+                if (asyncBgmClient == null) {
+                    asyncBgmClient = AsyncBgmClient(this)
+                }
+            }
+        }
+        return asyncBgmClient!!
     }
 
     @Throws(BgmException::class)
-    private fun <T> buildRequest(request: Request<T>, timeout: Duration? = null): HttpRequest? {
+    internal fun <T> buildRequest(request: Request<T>, timeout: Duration? = null): HttpRequest? {
         var uri = determineUri(request)
         val httpRequest = HttpRequest.newBuilder()
+        httpRequest.header(HttpHeaders.UA, UA)
         request.token?.let {
             httpRequest.header(HttpHeaders.AUTHORIZATION, "Bearer ${request.token}")
         }
@@ -85,7 +103,7 @@ class BgmClient(
         } else {
             val map = convertToMap(request)
             if (map.isNotEmpty()) {
-                val params = URLEncoder.encode(map.map { "${it.key}=${it.value}" }.joinToString("&"), StandardCharsets.UTF_8)
+                val params = map.map { "${it.key}=${it.value.toString().urlEncode()}" }.joinToString("&")
                 uri = "$uri?$params"
             }
             httpRequest.GET()
@@ -95,16 +113,20 @@ class BgmClient(
         return httpRequest.uri(URI.create(uri)).build()
     }
 
-    private fun printDebugRequest(byteArray: ByteArray) {
+    internal fun buildAccessTokenReq(grantType: String, code: String? = null, refreshToken: String? = null, state: String? = null): AccessTokenRequest {
+        return AccessTokenRequest(grantType, appId, appSecret, redirectUri, code, refreshToken, state)
+    }
+
+    internal fun determineUri(request: Request<*>): String {
+        return if (request.isAuthRequest) "$authBaseUrl/${request.method}" else "$apiBaseUrl/${request.method}"
+    }
+
+    internal fun printDebugRequest(byteArray: ByteArray) {
         if (!isDebugEnabled) return
         log.debug("Request data \n{}", String(byteArray))
     }
 
-    private fun determineUri(request: Request<*>): String {
-        return if (request.isAuthRequest) "$authBaseUrl/${request.method}" else "$apiBaseUrl/${request.method}"
-    }
-
-    private fun logResponse(response: HttpResponse<ByteArray>): HttpResponse<ByteArray> {
+    internal fun logResponse(response: HttpResponse<ByteArray>): HttpResponse<ByteArray> {
         if (isDebugEnabled) response.body()?.let { log.debug("Response ${String(it)}") }
         return response
     }
