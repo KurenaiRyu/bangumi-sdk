@@ -1,7 +1,6 @@
 package moe.kurenai.bgm
 
 import com.fasterxml.jackson.core.type.TypeReference
-import moe.kurenai.bgm.model.character.CharacterPerson
 import moe.kurenai.bgm.model.person.PersonDetail
 import moe.kurenai.bgm.model.subject.RelatedPerson
 import moe.kurenai.bgm.model.subject.Subject
@@ -30,12 +29,12 @@ class MapperTest {
         println(MAPPER.readValue(json3, PersonDetail::class.java))
     }
 
-    @Test
-    fun testCharacterDetail() {
-        val json =
-            "{\"id\":19683,\"name\":\"天谷奏香\",\"type\":1,\"images\":{\"large\":\"https://lain.bgm.tv/pic/crt/l/3e/27/19683_crt_7LeOu.jpg\",\"medium\":\"https://lain.bgm.tv/pic/crt/m/3e/27/19683_crt_7LeOu.jpg\",\"small\":\"https://lain.bgm.tv/pic/crt/s/3e/27/19683_crt_7LeOu.jpg\",\"grid\":\"https://lain.bgm.tv/pic/crt/g/3e/27/19683_crt_7LeOu.jpg\"},\"summary\":\"\",\"locked\":false,\"infobox\":[{\"key\":\"简体中文名\",\"value\":\"天谷奏香\"},{\"key\":\"别名\",\"value\":[{\"k\":\"罗马字\",\"v\":\"Amaya Kanaka\"}]},{\"key\":\"生日\",\"value\":\"11月10日\"}],\"gender\":null,\"blood_type\":null,\"birth_year\":null,\"birth_mon\":11,\"birth_day\":10,\"stat\":{\"comments\":4,\"collects\":28}}"
-        println(MAPPER.readValue(json, CharacterPerson::class.java))
-    }
+//    @Test
+//    fun testCharacterDetail() {
+//        val json =
+//            "{\"id\":19683,\"Name\":\"天谷奏香\",\"type\":1,\"images\":{\"large\":\"https://lain.bgm.tv/pic/crt/l/3e/27/19683_crt_7LeOu.jpg\",\"medium\":\"https://lain.bgm.tv/pic/crt/m/3e/27/19683_crt_7LeOu.jpg\",\"small\":\"https://lain.bgm.tv/pic/crt/s/3e/27/19683_crt_7LeOu.jpg\",\"grid\":\"https://lain.bgm.tv/pic/crt/g/3e/27/19683_crt_7LeOu.jpg\"},\"summary\":\"\",\"locked\":false,\"infobox\":[{\"key\":\"简体中文名\",\"value\":\"天谷奏香\"},{\"key\":\"别名\",\"value\":[{\"k\":\"罗马字\",\"v\":\"Amaya Kanaka\"}]},{\"key\":\"生日\",\"value\":\"11月10日\"}],\"gender\":null,\"blood_type\":null,\"birth_year\":null,\"birth_mon\":11,\"birth_day\":10,\"stat\":{\"comments\":4,\"collects\":28}}"
+//        println(MAPPER.readValue(json, CharacterPerson::class.java))
+//    }
 
     @Test
     fun testDeserialize() {
