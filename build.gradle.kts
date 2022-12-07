@@ -5,7 +5,7 @@ plugins {
     `maven-publish`
 }
 
-group = "moe.kurenai.bgm"
+group = "com.github.kurenairyu"
 version = "0.0.1"
 
 repositories {
