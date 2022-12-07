@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "moe.kurenai.bgm"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.1"
 
 repositories {
     mavenLocal()
