@@ -1,9 +1,10 @@
 package moe.kurenai.bgm.exception
 
-import com.fasterxml.jackson.databind.JsonNode
+import kotlinx.serialization.Serializable
 
+@Serializable
 class ValidationError(
-    var detail: JsonNode? = null,
+    var detail: Map<String, String>? = null,
 ): BgmException() {
 
 }

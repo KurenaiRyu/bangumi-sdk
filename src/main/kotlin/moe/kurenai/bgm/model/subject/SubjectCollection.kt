@@ -1,6 +1,9 @@
 package moe.kurenai.bgm.model.subject
 
-class SubjectCollection{
+import kotlinx.serialization.Serializable
+
+@Serializable
+class SubjectCollection {
     var wish: Int = 0
     var collect: Int = 0
     var doing: Int = 0

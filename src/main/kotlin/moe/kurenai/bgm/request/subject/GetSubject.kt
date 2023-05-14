@@ -11,6 +11,9 @@ data class GetSubject(
     val subjectId: Int,
 ): Request<Subject>() {
     @JsonIgnore
+    override val responseDeserializer = Subject.serializer()
+
+    @JsonIgnore
     override val path: String = "v0/subjects/$subjectId"
 
     @JsonIgnore

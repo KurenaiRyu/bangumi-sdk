@@ -1,6 +1,9 @@
 package moe.kurenai.bgm.model.auth
 
-data class TokenStatus (
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class TokenStatus(
     val accessToken: String,
     val clientId: String,
     val expires: Long,

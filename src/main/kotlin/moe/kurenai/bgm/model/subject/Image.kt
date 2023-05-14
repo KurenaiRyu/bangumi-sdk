@@ -1,7 +1,9 @@
 package moe.kurenai.bgm.model.subject
 
+import kotlinx.serialization.Serializable
 import moe.kurenai.bgm.model.subject.Image.Companion.DEFAULT_IMAGE
 
+@Serializable
 class Image {
 
     companion object {

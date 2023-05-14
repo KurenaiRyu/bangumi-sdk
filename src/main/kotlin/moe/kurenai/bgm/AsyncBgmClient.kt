@@ -4,7 +4,7 @@ import moe.kurenai.bgm.model.auth.AccessToken
 import moe.kurenai.bgm.request.Request
 import moe.kurenai.bgm.request.auth.AccessTokenGrantType
 import moe.kurenai.bgm.util.DefaultMapper.parse
-import org.apache.logging.log4j.LogManager
+import moe.kurenai.bgm.util.getLogger
 import java.net.http.HttpResponse
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
@@ -14,7 +14,7 @@ class AsyncBgmClient(
 ) {
 
     companion object {
-        private val log = LogManager.getLogger()
+        private val log = getLogger()
     }
 
     fun <T> send(request: Request<T>, timeout: Duration? = null): CompletableFuture<T> {

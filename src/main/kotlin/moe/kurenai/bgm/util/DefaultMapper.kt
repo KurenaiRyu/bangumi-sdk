@@ -11,14 +11,13 @@ import com.fasterxml.jackson.module.kotlin.kotlinModule
 import moe.kurenai.bgm.exception.BgmException
 import moe.kurenai.bgm.exception.NotFoundException
 import moe.kurenai.bgm.exception.ValidationError
-import org.apache.logging.log4j.LogManager
 import java.io.IOException
 import java.net.http.HttpResponse
 
 
 object DefaultMapper {
 
-    private val log = LogManager.getLogger()
+    private val log = getLogger()
 
     val MAPPER: ObjectMapper = jsonMapper {
         addModules(

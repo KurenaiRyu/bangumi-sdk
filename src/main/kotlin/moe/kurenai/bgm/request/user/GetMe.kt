@@ -13,6 +13,8 @@ class GetMe() : Request<Me>() {
     @JsonIgnore
     override val responseType = object : TypeReference<Me>() {}
 
+    override val responseDeserializer = Me.serializer()
+
     @JsonIgnore
     override val httpMethod = HttpMethod.GET
 

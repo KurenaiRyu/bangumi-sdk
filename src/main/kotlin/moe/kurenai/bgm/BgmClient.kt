@@ -11,7 +11,7 @@ import moe.kurenai.bgm.util.DefaultMapper
 import moe.kurenai.bgm.util.DefaultMapper.convertToMap
 import moe.kurenai.bgm.util.DefaultMapper.parse
 import moe.kurenai.bgm.util.HttpHeaders
-import org.apache.logging.log4j.LogManager
+import moe.kurenai.bgm.util.getLogger
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -35,7 +35,7 @@ class BgmClient(
         internal val DEFAULT_TIMEOUT = Duration.ofSeconds(10)
         internal const val DEFAULT_MIME_TYPE = "application/json"
 
-        private val log = LogManager.getLogger()
+        private val log = getLogger()
     }
 
     internal val reactiveClient: ReactiveBgmClient by lazy { ReactiveBgmClient(this) }

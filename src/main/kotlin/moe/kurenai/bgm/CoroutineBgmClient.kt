@@ -1,14 +1,13 @@
 package moe.kurenai.bgm
 
-import com.fasterxml.jackson.core.JacksonException
-import com.fasterxml.jackson.core.type.TypeReference
 import io.ktor.client.*
-import io.ktor.client.call.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.plugins.compression.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import kotlinx.serialization.DeserializationStrategy
+import kotlinx.serialization.json.Json
 import moe.kurenai.bgm.exception.BgmException
 import moe.kurenai.bgm.exception.NotFoundException
 import moe.kurenai.bgm.exception.UnauthorizedException
@@ -16,17 +15,21 @@ import moe.kurenai.bgm.exception.ValidationError
 import moe.kurenai.bgm.model.auth.AccessToken
 import moe.kurenai.bgm.request.Request
 import moe.kurenai.bgm.request.auth.AccessTokenGrantType
-import moe.kurenai.bgm.util.DefaultMapper.MAPPER
 import moe.kurenai.bgm.util.DefaultMapper.convertToByteArray
 import moe.kurenai.bgm.util.DefaultMapper.convertToMap
-import org.apache.logging.log4j.LogManager
+import moe.kurenai.bgm.util.getLogger
 
 class CoroutineBgmClient(
     val default: BgmClient
 ) {
 
     companion object {
-        private val log = LogManager.getLogger()
+        private val log = getLogger()
+        private val json = Json {
+            ignoreUnknownKeys = true
+            isLenient = true
+            prettyPrint = true
+        }
     }
 
     val client = HttpClient(OkHttp) {
@@ -57,7 +60,9 @@ class CoroutineBgmClient(
                 request.token?.let { append(HttpHeaders.Authorization, "Bearer ${request.token}") }
             }
         }
-        return resp.parse(request.responseType)
+        val deserializer =
+            request.responseDeserializer ?: throw BgmException("[${request.javaClass.name}]没有声明返回值反序列化对象")
+        return resp.parse(deserializer)
     }
 
     fun getOauthUrl(state: String? = null): String {
@@ -78,31 +83,38 @@ class CoroutineBgmClient(
 
     fun async() = default.async()
 
-    private suspend fun <T> HttpResponse.parse(reference: TypeReference<T>): T {
-        val body = this.body<ByteArray>()
+    private suspend fun <T> HttpResponse.parse(deserializer: DeserializationStrategy<T>): T {
+        val body = this.bodyAsText()
         return when (this.status) {
             HttpStatusCode.OK -> {
-                kotlin.runCatching { MAPPER.readValue(body, reference) }
+                kotlin.runCatching { json.decodeFromString(deserializer, body) }
                     .recover {
-                        throw if (it is JacksonException) it
-                        else kotlin.runCatching { MAPPER.readValue(body, BgmException::class.java) }.getOrNull() ?: it
+                        throw kotlin.runCatching {
+                            json.decodeFromString(BgmException.serializer(), body).apply {
+                                cause = it
+                            }
+                        }.getOrNull() ?: it
                     }.getOrThrow()
             }
 
             HttpStatusCode.Unauthorized -> {
-                throw MAPPER.readValue(body, UnauthorizedException::class.java)
+                throw json.decodeFromString(UnauthorizedException.serializer(), body)
             }
 
             HttpStatusCode.NotFound -> {
-                throw MAPPER.readValue(body, NotFoundException::class.java)
+                throw json.decodeFromString(NotFoundException.serializer(), body)
             }
 
             HttpStatusCode.UnprocessableEntity -> {
-                throw MAPPER.readValue(body, ValidationError::class.java)
+                throw json.decodeFromString(ValidationError.serializer(), body)
             }
 
             else -> {
-                throw BgmException("Unknown response type")
+                throw runCatching {
+                    json.decodeFromString(BgmException.serializer(), body)
+                }.recover {
+                    BgmException("Unknown response type")
+                }.getOrThrow()
             }
         }
     }
