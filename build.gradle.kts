@@ -1,9 +1,9 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.8.21"
+    kotlin("jvm") version "1.9.10"
     `maven-publish`
-    kotlin("plugin.serialization") version "1.8.21"
+    kotlin("plugin.serialization") version "1.9.10"
     id("org.jetbrains.dokka") version "0.9.17"
 }
 
@@ -25,8 +25,8 @@ object Versions {
 dependencies {
     api("org.jetbrains.kotlin", "kotlin-reflect")
     api("org.jetbrains.kotlin", "kotlin-stdlib-jdk8")
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
+    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
 
     api("com.fasterxml.jackson.core:jackson-databind:${Versions.jackson}")
     api("com.fasterxml.jackson.module:jackson-module-kotlin:${Versions.jackson}")
