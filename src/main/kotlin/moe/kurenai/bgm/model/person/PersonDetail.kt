@@ -22,10 +22,10 @@ data class PersonDetail(
     @SerialName("blood_type")
     val bloodType: Int?,
     @SerialName("birth_year")
-    val birthYear: Int,
+    val birthYear: Int?,
     @SerialName("birth_mon")
-    val birthMon: Int,
+    val birthMon: Int?,
     @SerialName("birth_day")
-    val birthDay: Int,
+    val birthDay: Int?,
     val stat: Stat
 )
