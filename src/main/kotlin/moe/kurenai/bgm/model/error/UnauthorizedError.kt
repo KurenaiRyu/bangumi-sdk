@@ -1,11 +1,11 @@
-package moe.kurenai.bgm.exception
+package moe.kurenai.bgm.model.error
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-class UnauthorizedException(
+class UnauthorizedError(
     var title: String? = null,
     var description: String? = null,
     var detail: Map<String, String>? = null,
-) : BgmException() {
+) : BgmError() {
 }

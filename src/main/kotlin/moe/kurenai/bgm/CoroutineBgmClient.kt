@@ -9,10 +9,11 @@ import io.ktor.http.*
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.json.Json
 import moe.kurenai.bgm.exception.BgmException
-import moe.kurenai.bgm.exception.NotFoundException
-import moe.kurenai.bgm.exception.UnauthorizedException
-import moe.kurenai.bgm.exception.ValidationError
 import moe.kurenai.bgm.model.auth.AccessToken
+import moe.kurenai.bgm.model.error.BgmError
+import moe.kurenai.bgm.model.error.NotFoundError
+import moe.kurenai.bgm.model.error.UnauthorizedError
+import moe.kurenai.bgm.model.error.ValidationError
 import moe.kurenai.bgm.request.Request
 import moe.kurenai.bgm.request.auth.AccessTokenGrantType
 import moe.kurenai.bgm.util.DefaultMapper.convertToByteArray
@@ -61,7 +62,8 @@ class CoroutineBgmClient(
             }
         }
         val deserializer =
-            request.responseDeserializer ?: throw BgmException("[${request.javaClass.name}]没有声明返回值反序列化对象")
+            request.responseDeserializer
+                ?: throw BgmException(BgmError("[${request.javaClass.name}]没有声明返回值反序列化对象"))
         return resp.parse(deserializer)
     }
 
@@ -88,33 +90,44 @@ class CoroutineBgmClient(
         return when (this.status) {
             HttpStatusCode.OK -> {
                 kotlin.runCatching { json.decodeFromString(deserializer, body) }
-                    .recover {
-                        throw kotlin.runCatching {
-                            json.decodeFromString(BgmException.serializer(), body).apply {
-                                cause = it
+                    .recoverCatching { ex ->
+                        json.decodeFromString(BgmError.serializer(), body).let {
+                            BgmException(it).apply {
+                                cause = ex
                             }
-                        }.getOrNull() ?: it
+                        }
+                    }.recover { ex ->
+                        BgmException(BgmError("Unknown response type: $body")).apply { cause = ex }
                     }.getOrThrow()
             }
 
             HttpStatusCode.Unauthorized -> {
-                throw json.decodeFromString(UnauthorizedException.serializer(), body)
+                json.decodeFromString(UnauthorizedError.serializer(), body)
             }
 
             HttpStatusCode.NotFound -> {
-                throw json.decodeFromString(NotFoundException.serializer(), body)
+                json.decodeFromString(NotFoundError.serializer(), body)
             }
 
             HttpStatusCode.UnprocessableEntity -> {
-                throw json.decodeFromString(ValidationError.serializer(), body)
+                json.decodeFromString(ValidationError.serializer(), body)
             }
 
             else -> {
-                throw runCatching {
-                    json.decodeFromString(BgmException.serializer(), body)
+                runCatching {
+                    json.decodeFromString(BgmError.serializer(), body)
                 }.recover {
-                    BgmException("Unknown response type")
+                    BgmException(BgmError(error = "Unknown response type: $body")).apply {
+                        this.cause = it
+                    }
                 }.getOrThrow()
+            }
+        }.let {
+            return@let when (it) {
+                is BgmError -> throw BgmException(it)
+                is BgmException -> throw it
+                is Throwable -> throw BgmException(BgmError("Unknown response type: $body")).apply { cause = it }
+                else -> it as T
             }
         }
     }

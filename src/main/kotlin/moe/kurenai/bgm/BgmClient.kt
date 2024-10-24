@@ -102,7 +102,15 @@ class BgmClient(
     }
 
     internal fun buildAccessTokenReq(grantType: String, code: String? = null, refreshToken: String? = null, state: String? = null): AccessTokenRequest {
-        return AccessTokenRequest(grantType, appId, appSecret, redirectUri, code, refreshToken, state)
+        return AccessTokenRequest(
+            grantType = grantType,
+            clientId = appId,
+            clientSecret = appSecret,
+            redirectUri = redirectUri,
+            code = code,
+            refreshToken = refreshToken,
+            state = state
+        )
     }
 
     internal fun determineUri(request: Request<*>): String {

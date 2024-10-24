@@ -3,6 +3,7 @@ package moe.kurenai.bgm.request.auth
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.core.type.TypeReference
 import kotlinx.serialization.DeserializationStrategy
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import moe.kurenai.bgm.model.auth.AccessToken
@@ -11,11 +12,16 @@ import moe.kurenai.bgm.request.Request
 
 @Serializable
 class AccessTokenRequest(
+    @SerialName("grant_type")
     val grantType: String,
+    @SerialName("client_id")
     val clientId: String,
+    @SerialName("client_secret")
     val clientSecret: String,
+    @SerialName("redirect_uri")
     val redirectUri: String,
     val code: String? = null,
+    @SerialName("refresh_token")
     val refreshToken: String? = null,
     val state: String? = null,
 ): Request<AccessToken>() {

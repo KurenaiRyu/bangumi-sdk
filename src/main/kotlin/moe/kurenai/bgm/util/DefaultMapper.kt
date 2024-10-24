@@ -9,8 +9,9 @@ import com.fasterxml.jackson.module.kotlin.KotlinFeature
 import com.fasterxml.jackson.module.kotlin.jsonMapper
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import moe.kurenai.bgm.exception.BgmException
-import moe.kurenai.bgm.exception.NotFoundException
-import moe.kurenai.bgm.exception.ValidationError
+import moe.kurenai.bgm.model.error.BgmError
+import moe.kurenai.bgm.model.error.NotFoundError
+import moe.kurenai.bgm.model.error.ValidationError
 import java.io.IOException
 import java.net.http.HttpResponse
 
@@ -58,15 +59,21 @@ object DefaultMapper {
             }
 
             404 -> {
-                throw MAPPER.readValue(response.body(), NotFoundException::class.java)
+                MAPPER.readValue(response.body(), NotFoundError::class.java)
             }
 
             422 -> {
-                throw MAPPER.readValue(response.body(), ValidationError::class.java)
+                MAPPER.readValue(response.body(), ValidationError::class.java)
             }
 
             else -> {
-                throw BgmException("Unknown response type")
+                BgmError("Unknown response type: ${response.body()}")
+            }
+        }.let {
+            if (it is BgmError) {
+                throw BgmException(it)
+            } else {
+                it as T
             }
         }
     }

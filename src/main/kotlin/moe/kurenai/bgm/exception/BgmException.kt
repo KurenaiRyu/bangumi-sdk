@@ -1,17 +1,9 @@
 package moe.kurenai.bgm.exception
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
+import moe.kurenai.bgm.model.error.BgmError
 
-@Serializable
-open class BgmException(
-    val error: String = "",
-    @SerialName("error_description")
-    val errorDescription: String = "",
-    val request: String = "",
-    val code: Int = 0,
-) : RuntimeException("$error - $errorDescription") {
-    @Transient
+class BgmException(
+    val error: BgmError
+) : Exception("${error.error} - ${error.errorDescription}") {
     override var cause: Throwable? = null
 }

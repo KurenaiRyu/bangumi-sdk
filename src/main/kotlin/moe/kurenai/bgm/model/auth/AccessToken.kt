@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 
 @Serializable
-class AccessToken(
+data class AccessToken(
     @SerialName("access_token")
     val accessToken: String,
     @SerialName("expires_in")
